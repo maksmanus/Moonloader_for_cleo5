@@ -17,8 +17,6 @@ public:
 
     MoonLoaderCleo5Instance();
 
-    static void asyncMoonloaderLog(std::string text);
-
     static class Data
     {
         
