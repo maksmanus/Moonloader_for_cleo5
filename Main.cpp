@@ -22,59 +22,66 @@ void Cleo5Moonloader::Hooks::Moonloader_RegisterFunctionsHook(void* pointer)
         return;
     }
 
+    auto calling_lambda = [pointer, moonloaderModule, FoundVersion]()
+    {
+        std::string forkedsignature_MoonLoader__Registering__RegisterCleoFunctions = Cleo5Moonloader::Data::FindSignatureForVersion(Cleo5Moonloader::Data::MoonLoaderRegisteringRegisterCleoFunctionsSignature, FoundVersion);
+        std::string forkedsignature_MoonLoader__IsSampfuncLoaded = Cleo5Moonloader::Data::FindSignatureForVersion(Cleo5Moonloader::Data::MoonLoaderIsSampfuncLoadedSignature, FoundVersion);
+        std::string forkedsignature_MoonLoader__Registering__RegisterSampFunctions = Cleo5Moonloader::Data::FindSignatureForVersion(Cleo5Moonloader::Data::MoonLoaderRegisteringRegisterSampFunctionsSignature, FoundVersion);
+        std::string forkedsignature_MoonLoader__Registering__RegisterSampFunctions_Raknet = Cleo5Moonloader::Data::FindSignatureForVersion(Cleo5Moonloader::Data::MoonLoaderRegisteringRegisterSampFunctionsRaknetSignature, FoundVersion); 
+
+        int (WINAPI* CleoGetVersion)();
+        if(!GetModuleHandleA(MoonLoaderCleo5Instance::CleoLibName.data()))
+        {
+            return;
+        }
+        else
+        {
+            CleoGetVersion = GetProcAddress(GetModuleHandleA(MoonLoaderCleo5Instance::CleoLibName.data()), "_CLEO_GetVersion@0");
+        }
+        while(!IsCleoLoaded_forCleo5())
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+
+        if(forkedsignature_MoonLoader__IsSampfuncLoaded.empty() || forkedsignature_MoonLoader__Registering__RegisterCleoFunctions.empty() || forkedsignature_MoonLoader__Registering__RegisterSampFunctions.empty() || forkedsignature_MoonLoader__Registering__RegisterSampFunctions_Raknet.empty())
+        {
+            return;
+        }
+
+        void (* MoonLoader__Registering__RegisterCleoFunctions)(void*) = reinterpret_cast<decltype(MoonLoader__Registering__RegisterCleoFunctions)>(SSMP::PatternScan(moonloaderModule, forkedsignature_MoonLoader__Registering__RegisterCleoFunctions.c_str()));
+        bool (*MoonLoader__IsSampfuncLoaded)() = reinterpret_cast<decltype(MoonLoader__IsSampfuncLoaded)>(SSMP::PatternScan(moonloaderModule, forkedsignature_MoonLoader__IsSampfuncLoaded.c_str()));
+        void (*MoonLoader__Registering__RegisterSampFunctions)(void*) = reinterpret_cast<decltype(MoonLoader__Registering__RegisterSampFunctions)>(SSMP::PatternScan(moonloaderModule, forkedsignature_MoonLoader__Registering__RegisterSampFunctions.c_str()));
+        void (*MoonLoader__Registering__RegisterSampFunctions_Raknet)(void*) = reinterpret_cast<decltype(MoonLoader__Registering__RegisterSampFunctions_Raknet)>(SSMP::PatternScan(moonloaderModule, forkedsignature_MoonLoader__Registering__RegisterSampFunctions_Raknet.c_str()));
+
+        if(!MoonLoader__Registering__RegisterCleoFunctions || !MoonLoader__IsSampfuncLoaded || !MoonLoader__Registering__RegisterSampFunctions || !MoonLoader__Registering__RegisterSampFunctions_Raknet)
+        {
+            return;
+        }
+        if(IsCleoLoaded_forCleo5() && CleoGetVersion() >= 0x5000000)
+        {
+            MoonLoader__Registering__RegisterCleoFunctions(pointer);
+    
+            if(MoonLoader__IsSampfuncLoaded())
+            {
+                MoonLoader__Registering__RegisterSampFunctions(pointer);
+                MoonLoader__Registering__RegisterSampFunctions_Raknet(pointer);
+            }
+        }
+    };
+
     char (*original)(void*) = reinterpret_cast<decltype(original)>(SSMP::PatternScan(moonloaderModule, forkedSignature.c_str()));
     if(original)
     {
         original(pointer);
-        std::thread localthread = std::thread([pointer, moonloaderModule, FoundVersion]()
+        if(!IsCleoLoaded_forCleo5())
         {
-            std::string forkedsignature_MoonLoader__Registering__RegisterCleoFunctions = Cleo5Moonloader::Data::FindSignatureForVersion(Cleo5Moonloader::Data::MoonLoaderRegisteringRegisterCleoFunctionsSignature, FoundVersion);
-            std::string forkedsignature_MoonLoader__IsSampfuncLoaded = Cleo5Moonloader::Data::FindSignatureForVersion(Cleo5Moonloader::Data::MoonLoaderIsSampfuncLoadedSignature, FoundVersion);
-            std::string forkedsignature_MoonLoader__Registering__RegisterSampFunctions = Cleo5Moonloader::Data::FindSignatureForVersion(Cleo5Moonloader::Data::MoonLoaderRegisteringRegisterSampFunctionsSignature, FoundVersion);
-            std::string forkedsignature_MoonLoader__Registering__RegisterSampFunctions_Raknet = Cleo5Moonloader::Data::FindSignatureForVersion(Cleo5Moonloader::Data::MoonLoaderRegisteringRegisterSampFunctionsRaknetSignature, FoundVersion); 
-
-            int (WINAPI* CleoGetVersion)();
-            if(!GetModuleHandleA(MoonLoaderCleo5Instance::CleoLibName.data()))
-            {
-                return;
-            }
-            else
-            {
-                CleoGetVersion = GetProcAddress(GetModuleHandleA(MoonLoaderCleo5Instance::CleoLibName.data()), "_CLEO_GetVersion@0");
-            }
-            while(!IsCleoLoaded_forCleo5())
-            {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
-
-            if(forkedsignature_MoonLoader__IsSampfuncLoaded.empty() || forkedsignature_MoonLoader__Registering__RegisterCleoFunctions.empty() || forkedsignature_MoonLoader__Registering__RegisterSampFunctions.empty() || forkedsignature_MoonLoader__Registering__RegisterSampFunctions_Raknet.empty())
-            {
-                return;
-            }
-
-            void (* MoonLoader__Registering__RegisterCleoFunctions)(void*) = reinterpret_cast<decltype(MoonLoader__Registering__RegisterCleoFunctions)>(SSMP::PatternScan(moonloaderModule, forkedsignature_MoonLoader__Registering__RegisterCleoFunctions.c_str()));
-            bool (*MoonLoader__IsSampfuncLoaded)() = reinterpret_cast<decltype(MoonLoader__IsSampfuncLoaded)>(SSMP::PatternScan(moonloaderModule, forkedsignature_MoonLoader__IsSampfuncLoaded.c_str()));
-            void (*MoonLoader__Registering__RegisterSampFunctions)(void*) = reinterpret_cast<decltype(MoonLoader__Registering__RegisterSampFunctions)>(SSMP::PatternScan(moonloaderModule, forkedsignature_MoonLoader__Registering__RegisterSampFunctions.c_str()));
-            void (*MoonLoader__Registering__RegisterSampFunctions_Raknet)(void*) = reinterpret_cast<decltype(MoonLoader__Registering__RegisterSampFunctions_Raknet)>(SSMP::PatternScan(moonloaderModule, forkedsignature_MoonLoader__Registering__RegisterSampFunctions_Raknet.c_str()));
-
-            if(!MoonLoader__Registering__RegisterCleoFunctions || !MoonLoader__IsSampfuncLoaded || !MoonLoader__Registering__RegisterSampFunctions || !MoonLoader__Registering__RegisterSampFunctions_Raknet)
-            {
-                return;
-            }
-            if(IsCleoLoaded_forCleo5() && CleoGetVersion() >= 0x5000000)
-            {
-                MoonLoader__Registering__RegisterCleoFunctions(pointer);
-
-                if(MoonLoader__IsSampfuncLoaded())
-                {
-                    MoonLoader__Registering__RegisterSampFunctions(pointer);
-                    MoonLoader__Registering__RegisterSampFunctions_Raknet(pointer);
-                }
-            }
-
-        });
-
-        localthread.detach();
+            std::thread localthread = std::thread(calling_lambda);
+            localthread.detach();
+        }
+        else
+        {
+            calling_lambda();
+        }
     }
 }
 
@@ -110,7 +117,7 @@ MoonLoaderCleo5Instance::MoonLoaderCleo5Instance()
                 }
                 
                 if(!forkedSignature.empty())
-                {
+                {;
                     HookInstall::InstallCallHook(reinterpret_cast<uintptr_t>(SSMP::PatternScan(GetModuleHandleA(MoonLoaderCleo5Instance::MoonloaderLibName.data()), forkedSignature.c_str())), reinterpret_cast<uintptr_t>(Cleo5Moonloader::Hooks::Moonloader_RegisterFunctionsHook));
                 }
             }        

@@ -13,11 +13,11 @@ Cleo5Moonloader::Version Cleo5Moonloader::FindMoonloaderVersion()
     switch (*checkingAddress)
     {
     case 0xC8:
+    case 0xEE:
         return Version::Version_026_5; 
         break;
     case 0xEC:
         return Version::Version_027_pr3;
-        break;        
     default:
         return Version::None;
         break;
