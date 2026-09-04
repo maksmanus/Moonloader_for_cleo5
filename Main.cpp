@@ -120,7 +120,7 @@ MoonLoaderCleo5Instance::MoonLoaderCleo5Instance()
     }
     else
     {
-        MessageBoxA(NULL, "MoonLoader Not found, you can continue gamme", 0, 0);
+        MessageBoxA(NULL, "MoonLoader Not found, you can continue game", 0, 0);
     }
 }
 

@@ -8,7 +8,6 @@ namespace Cleo5Moonloader
     {
         None,
         Version_026_5,
-        Version_027_pr1,
         Version_027_pr3,
     };
 };

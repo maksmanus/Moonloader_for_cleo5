@@ -81,10 +81,6 @@ namespace Cleo5Moonloader
                     }
                     break;
                 }
-                case Version::Version_027_pr1:
-                {
-                    break;
-                }
                 case Version::Version_027_pr3:
                 {
                     // disabling moonloader function CTheScripts__InitScriptSpace
