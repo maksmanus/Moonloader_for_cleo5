@@ -13,6 +13,7 @@ remote::memory MoonLoaderCleo5Instance::ProcessMemory;
 
 void Cleo5Moonloader::Hooks::Moonloader_RegisterFunctionsHook(void* pointer)
 {
+    static bool IsCleo5Hooked = false, IsCleoChecked = false;
     HMODULE moonloaderModule = GetModuleHandleA(MoonLoaderCleo5Instance::MoonloaderLibName.data());
     auto FoundVersion = FindMoonloaderVersion();
     std::string forkedSignature = Cleo5Moonloader::Data::FindSignatureForVersion(Cleo5Moonloader::Data::RegisterAllMoonloaderFunctionsSignature, FoundVersion);
@@ -28,6 +29,7 @@ void Cleo5Moonloader::Hooks::Moonloader_RegisterFunctionsHook(void* pointer)
         std::string forkedsignature_MoonLoader__IsSampfuncLoaded = Cleo5Moonloader::Data::FindSignatureForVersion(Cleo5Moonloader::Data::MoonLoaderIsSampfuncLoadedSignature, FoundVersion);
         std::string forkedsignature_MoonLoader__Registering__RegisterSampFunctions = Cleo5Moonloader::Data::FindSignatureForVersion(Cleo5Moonloader::Data::MoonLoaderRegisteringRegisterSampFunctionsSignature, FoundVersion);
         std::string forkedsignature_MoonLoader__Registering__RegisterSampFunctions_Raknet = Cleo5Moonloader::Data::FindSignatureForVersion(Cleo5Moonloader::Data::MoonLoaderRegisteringRegisterSampFunctionsRaknetSignature, FoundVersion); 
+        std::string forkedSignature_Moonloader_IsCleoLoaded = Cleo5Moonloader::Data::FindSignatureForVersion(Cleo5Moonloader::Data::IsCleoLoadedSignature, FoundVersion);
 
         int (WINAPI* CleoGetVersion)();
         if(!GetModuleHandleA(MoonLoaderCleo5Instance::CleoLibName.data()))
@@ -59,6 +61,16 @@ void Cleo5Moonloader::Hooks::Moonloader_RegisterFunctionsHook(void* pointer)
         }
         if(IsCleoLoaded_forCleo5() && CleoGetVersion() >= 0x5000000)
         {
+            if(!IsCleo5Hooked && !IsCleo5Hooked)
+            {
+                void* TargetFunction = reinterpret_cast<void*>(SSMP::PatternScan(moonloaderModule, forkedSignature_Moonloader_IsCleoLoaded.c_str()));
+                if(TargetFunction)
+                {
+                    HookInstall::InstallJumpHook(reinterpret_cast<uintptr_t>(TargetFunction), reinterpret_cast<uintptr_t>(IsCleoLoaded_forCleo5));
+                    IsCleo5Hooked = true;
+                }
+                IsCleoChecked = true;
+            }
             MoonLoader__Registering__RegisterCleoFunctions(pointer);
     
             if(MoonLoader__IsSampfuncLoaded())
@@ -127,7 +139,7 @@ MoonLoaderCleo5Instance::MoonLoaderCleo5Instance()
     }
     else
     {
-        MessageBoxA(NULL, "MoonLoader Not found, you can continue game", 0, 0);
+        //MessageBoxA(NULL, "MoonLoader Not found, you can continue game", 0, 0);
     }
 }
 
